@@ -49,7 +49,7 @@ class PrivateClient(PublicClient):
 
     # Order Placement API
     @typeassert(symbol=str, amount=str, price=str, side=str, options=list)
-    def new_order(self, symbol, amount, price, side, options=["immediate-or-cancel"]):
+    def new_order(self, symbol, amount, price, side, otype='exchange limit', stop_price=None, options=["immediate-or-cancel"]):
         """
         This endpoint is used for the creation of a new order.
         Requires you to provide the symbol, amount, price, side and options.
@@ -87,14 +87,19 @@ class PrivateClient(PublicClient):
                 'original_amount': '0.02'
             }
         """
+
         payload = {
             'symbol': symbol,
             'amount': amount,
             'price': price,
             'side': side,
             'options': options,
-            'type': 'exchange limit'
+            'type': otype,
         }
+        if 'stop' in otype:
+            assert stop_price is not None, 'Enter stop price'
+            payload['stop_price'] = stop_price
+
         return self.api_query('/v1/order/new', payload)
 
     @typeassert(order_id=str)
